@@ -216,16 +216,6 @@
                 display: inline-block;
             }
 
-            .white-color-background {
-                display: inline-block;
-                height: 26px;
-                width: 26px;
-                border-radius: 13px;
-                background: #fff;
-                vertical-align: middle;
-                margin: auto 10px auto 10px;
-            }
-
             .current-color-background {
                 display: inline-block;
                 height: 28px;
@@ -237,61 +227,30 @@
                 margin: auto 10px auto 10px;
             }
 
-            .white-color-background {
+            .color-background {
                 display: inline-block;
                 height: 26px;
                 width: 26px;
                 border-radius: 13px;
-                background: #fff;
                 vertical-align: middle;
                 margin: auto 10px auto 10px;
             }
 
-            .rice-color-background {
-                display: inline-block;
-                height: 28px;
-                width: 28px;
-                border-radius: 14px;
-                background: #e9dfc7;
-                vertical-align: middle;
-                margin: auto 10px auto 10px;
-            }
-
-            .gray-color-background {
-                display: inline-block;
-                height: 28px;
-                width: 28px;
-                border-radius: 14px;
-                background: #808080;
-                vertical-align: middle;
-                margin: auto 10px auto 10px;
-            }
-
-            .green-color-background {
-                display: inline-block;
-                height: 28px;
-                width: 28px;
-                border-radius: 14px;
-                background: #87ceeb;
-                vertical-align: middle;
-                margin: auto 10px auto 10px;
-            }
-
-            .darkGray-color-background {
-                display: inline-block;
-                height: 28px;
-                width: 28px;
-                border-radius: 14px;
-                background: #708090;
-                vertical-align: middle;
-                margin: auto 10px auto 10px;
+            #action_mid {
+                position:fixed;
+                height:40%;
+                width:100%;
+                top:30%;
             }
         </style>
         <title>Web书城</title>
     </head>
     <body>
         <div id="root" class="container">
-            <div class="nav-bar-top">
+            <div>
+                <div id="action_mid"></div>
+            </div>
+            <div class="nav-bar-top js_nav_top" style="display:none">
                 <div class="icon-back"></div>
                 <div class="nav-bar-top-title">返回书架</div>
             </div>
@@ -320,14 +279,31 @@
                     <li>下一章</li>
                 </ul>
             </div>
-            <div class="nav-bar-bottom">
+            <div id="nav-panel-bk" style="display:none"></div>
+            <div id="nav-panel" style="display:none">
+                <div id="font-size-div">
+                    <div id="font-size-title">字号</div>
+                    <span class="font-size-span">大</span>
+                    <span class="font-size-span">中</span>
+                    <span class="font-size-span">小</span>
+                </div>
+                <div id="background-color-div">
+                    <div id="background-color-title">背景</div>
+                    <span class="color-background current-color-background" style="background: #fff;"></span>
+                    <span class="color-background" style="background: #e9dfc7;"></span>
+                    <span class="color-background" style="background: #808080;"></span>
+                    <span class="color-background" style="background: #87ceeb;"></span>
+                    <span class="color-background" style="background: #708090;"></span>
+                </div>
+            </div>
+            <div class="nav-bar-bottom js_nav_bottom" style="display:none">
                 <div class="nav-menu">
                     <div class="nav-menu-icon"></div>
                     <div class="nav-item-text">目录</div>
                 </div>
                 <div class="nav-font">
-                    <div class="nav-font-icon" style="display:none"></div>
-                    <div class="nav-font-icon-active"></div>
+                    <div class="nav-font-icon"></div>
+                    <div class="nav-font-icon-active"  style="display:none"></div>
                     <div class="nav-item-text">字体</div>
                 </div>
                 <div class="nav-light">
@@ -335,23 +311,6 @@
                     <div class="nav-light-title" style="display:none">夜间</div>
                     <div class="nav-light-day-icon"></div>
                     <div class="nav-item-text">白天</div>
-                </div>
-                <div id="nav-panel-bk"></div>
-                <div id="nav-panel">
-                    <div id="font-size-div">
-                        <div id="font-size-title">字号</div>
-                        <span class="font-size-span">大</span>
-                        <span class="font-size-span">中</span>
-                        <span class="font-size-span">小</span>
-                    </div>
-                    <div id="background-color-div">
-                        <div id="background-color-title">背景</div>
-                        <span class="white-color-background current-color-background"></span>
-                        <span class="rice-color-background"></span>
-                        <span class="gray-color-background"></span>
-                        <span class="green-color-background"></span>
-                        <span class="darkGray-color-background"></span>
-                    </div>
                 </div>
             </div>
         </div>
@@ -378,9 +337,18 @@
                     }
                 })();
 
+                var Dom = {
+                    js_nav_top : $('.js_nav_top'),
+                    js_nav_bottom : $('.js_nav_bottom'),
+                    font_button: $('.nav-font')
+                }
+
+                var Win = $(window);
+                var Doc = $(document);
+
                 function main() {
                     //Todo Main function
-                    alert('How');
+                    EventHandler();
                 }
 
                 function ReaderMode() {
@@ -393,6 +361,36 @@
 
                 function EventHandler() {
                     //Todo 交互的事件绑定
+
+                    $("#action_mid").click(function() {
+                        if (Dom.js_nav_top.css('display') === 'none') {
+                            Dom.js_nav_top.show();
+                            Dom.js_nav_bottom.show();
+                        } else {
+                            Dom.js_nav_top.hide();
+                            Dom.js_nav_bottom.hide();
+                        }
+                    });
+
+                    Dom.font_button.click(function() {
+                        if ($('#nav-panel').css('display') === 'none') {
+                            $('#nav-panel').show();
+                            $('#nav-panel-bk').show();
+                            $('.nav-font-icon').hide();
+                            $('.nav-font-icon-active').show();
+                        } else {
+                            $('#nav-panel').hide();
+                            $('#nav-panel-bk').hide();
+                            $('.nav-font-icon').show();
+                            $('.nav-font-icon-active').hide();
+                        }
+                    })
+
+
+                    Win.scroll(function() {
+                        Dom.js_nav_top.hide();
+                        Dom.js_nav_bottom.hide();
+                    });
                 }
 
                 main();
