@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-with,initial-scale=1,user-scalable=no,minimal-scale=1">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,minimum-scale=1">
         <meta name="format-detection" content="telephone=no">
         <link rel="stylesheet" href="css/reset.css">
         <style type="text/css">
@@ -283,9 +283,8 @@
             <div id="nav-panel" style="display:none">
                 <div id="font-size-div">
                     <div id="font-size-title">字号</div>
-                    <span class="font-size-span">大</span>
-                    <span class="font-size-span">中</span>
-                    <span class="font-size-span">小</span>
+                    <span id="font-large" class="font-size-span">大</span>
+                    <span id="font-small" class="font-size-span">小</span>
                 </div>
                 <div id="background-color-div">
                     <div id="background-color-title">背景</div>
@@ -345,8 +344,15 @@
 
                 var Win = $(window);
                 var Doc = $(document);
+                var RootContainer = $('#fiction_chapter_content').children('p');
+                var initialFont = parseInt(Util.StorageGetter('font_size'));
+                if ( !initialFont) {
+                    initialFont = 17;
+                }
+                RootContainer.css('font-size', initialFont);
 
                 function main() {
+
                     //Todo Main function
                     EventHandler();
                 }
@@ -369,6 +375,8 @@
                         } else {
                             Dom.js_nav_top.hide();
                             Dom.js_nav_bottom.hide();
+                            $('#nav-panel').hide();
+                            $('#nav-panel-bk').hide();
                         }
                     });
 
@@ -386,11 +394,26 @@
                         }
                     })
 
-
                     Win.scroll(function() {
                         Dom.js_nav_top.hide();
                         Dom.js_nav_bottom.hide();
+                        $('#nav-panel').hide();
+                        $('#nav-panel-bk').hide();
                     });
+
+                    $('#font-large').click(function() {
+                        if (initialFont >= 20) return;
+                        initialFont += 1;
+                        RootContainer.css('font-size', initialFont);
+                        Util.StorageSetter('font_size', initialFont);
+                    })
+
+                    $('#font-small').click(function() {
+                        if (initialFont <= 14) return;
+                        initialFont -= 1;
+                        RootContainer.css('font-size', initialFont);
+                        Util.StorageSetter('font_size', initialFont);
+                    })
                 }
 
                 main();
