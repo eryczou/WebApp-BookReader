@@ -29,12 +29,6 @@
                 border-bottom: solid 1px;
             }
 
-            #fiction_chapter_content h4 {
-                margin: 15px auto 0 10px;
-                font-size: 20px;
-                line-height: 30px;
-            }
-
             #fiction_chapter_content p {
                 margin: 5px auto 5px;
                 text-indent: 2em;
@@ -218,10 +212,10 @@
 
             .current-color-background {
                 display: inline-block;
-                height: 28px;
-                width: 28px;
-                border: 1px solid #ff7800;
-                border-radius: 14px;
+                height: 30px;
+                width: 30px;
+                border: 2px solid #ff7800;
+                border-radius: 15px;
                 background: #fff;
                 vertical-align: middle;
                 margin: auto 10px auto 10px;
@@ -256,7 +250,6 @@
             </div>
             <div id="fiction_chapter_title">第2章 谁准你进来的</div>
             <div id="fiction_chapter_content">
-                <h4>谁准你进来的</h4>
                 <p>
                     沈梦像个孩子一般用手面擦了一把嘴，将嘴角的红酒抹去，“谢谢，再见。”起身赤着脚走到地毯上捡起被她丢掉的两只鞋，依然是一手拿一只，一副不准备穿鞋子的架势。
                     沈梦像个孩子一般用手面擦了一把嘴，将嘴角的红酒抹去，“谢谢，再见。”起身赤着脚走到地毯上捡起被她丢掉的两只鞋，依然是一手拿一只，一副不准备穿鞋子的架势。
@@ -288,11 +281,11 @@
                 </div>
                 <div id="background-color-div">
                     <div id="background-color-title">背景</div>
-                    <span class="color-background current-color-background" style="background: #fff;"></span>
-                    <span class="color-background" style="background: #e9dfc7;"></span>
-                    <span class="color-background" style="background: #808080;"></span>
-                    <span class="color-background" style="background: #87ceeb;"></span>
-                    <span class="color-background" style="background: #708090;"></span>
+                    <span id="white-background-select" class="color-background" style="background: #fff;"></span>
+                    <span id="rice-background-select" class="color-background" style="background: #e9dfc7;"></span>
+                    <span id="purple-background-select" class="color-background" style="background: #663399;"></span>
+                    <span id="navy-background-select" class="color-background" style="background: #708090;"></span>
+                    <span id="black-background-select" class="color-background" style="background: #000000;"></span>
                 </div>
             </div>
             <div class="nav-bar-bottom js_nav_bottom" style="display:none">
@@ -344,12 +337,26 @@
 
                 var Win = $(window);
                 var Doc = $(document);
+                var Body = $('body');
                 var RootContainer = $('#fiction_chapter_content').children('p');
                 var initialFont = parseInt(Util.StorageGetter('font_size'));
                 if ( !initialFont) {
                     initialFont = 17;
                 }
                 RootContainer.css('font-size', initialFont);
+
+                var initialFontColor = Util.StorageGetter('font_color');
+                if (!initialFontColor) {
+                    initialFontColor = '#555';
+                }
+                RootContainer.css('color', initialFontColor);
+
+                var initialBackgroundColor = Util.StorageGetter('background_color');
+                if (!initialBackgroundColor) {
+                    initialBackgroundColor = 'rice-background-select';
+                }
+                $('#' + initialBackgroundColor).addClass('current-color-background');
+                Body.css('background', $('#' + initialBackgroundColor).css('background'));
 
                 function main() {
 
@@ -377,6 +384,8 @@
                             Dom.js_nav_bottom.hide();
                             $('#nav-panel').hide();
                             $('#nav-panel-bk').hide();
+                            $('.nav-font-icon').show();
+                            $('.nav-font-icon-active').hide();
                         }
                     });
 
@@ -392,7 +401,7 @@
                             $('.nav-font-icon').show();
                             $('.nav-font-icon-active').hide();
                         }
-                    })
+                    });
 
                     Win.scroll(function() {
                         Dom.js_nav_top.hide();
@@ -406,13 +415,78 @@
                         initialFont += 1;
                         RootContainer.css('font-size', initialFont);
                         Util.StorageSetter('font_size', initialFont);
-                    })
+                    });
 
                     $('#font-small').click(function() {
                         if (initialFont <= 14) return;
                         initialFont -= 1;
                         RootContainer.css('font-size', initialFont);
                         Util.StorageSetter('font_size', initialFont);
+                    });
+
+                    $('#white-background-select').click(function() {
+                        if (Body.css('background') != '#fff') {
+                            Body.css('background', '#fff');
+                            RootContainer.css('color', '#555');
+                            Util.StorageSetter('background_color', 'white-background-select');
+                            $('#background-color-div').children('span').each(function() {
+                                $(this).removeClass('current-color-background');
+                            });
+                            $('#white-background-select').addClass('current-color-background');
+                            Util.StorageSetter('font_color', '#555');
+                        }
+                    })
+
+                    $('#rice-background-select').click(function() {
+                        if (Body.css('background') != '#e9dfc7') {
+                            Body.css('background', '#e9dfc7');
+                            RootContainer.css('color', '#555');
+                            Util.StorageSetter('background_color', 'rice-background-select');
+                            $('#background-color-div').children('span').each(function() {
+                                $(this).removeClass('current-color-background');
+                            });
+                            $('#rice-background-select').addClass('current-color-background');
+                            Util.StorageSetter('font_color', '#555');
+                        }
+                    })
+
+                    $('#purple-background-select').click(function() {
+                        if (Body.css('background') != '#663399') {
+                            Body.css('background', '#663399');
+                            RootContainer.css('color', '#fff');
+                            Util.StorageSetter('background_color', 'purple-background-select');
+                            $('#background-color-div').children('span').each(function() {
+                                $(this).removeClass('current-color-background');
+                            });
+                            $('#purple-background-select').addClass('current-color-background');
+                            Util.StorageSetter('font_color', '#fff');
+                        }
+                    })
+
+                    $('#navy-background-select').click(function() {
+                        if (Body.css('background') != '#708090') {
+                            Body.css('background', '#708090');
+                            RootContainer.css('color', '#fff');
+                            Util.StorageSetter('background_color', 'navy-background-select');
+                            $('#background-color-div').children('span').each(function() {
+                                $(this).removeClass('current-color-background');
+                            });
+                            $('#navy-background-select').addClass('current-color-background');
+                            Util.StorageSetter('font_color', '#fff');
+                        }
+                    })
+
+                    $('#black-background-select').click(function() {
+                        if (Body.css('background') != '#000000') {
+                            Body.css('background', '#000000');
+                            RootContainer.css('color', '#fff');
+                            Util.StorageSetter('background_color', 'black-background-select');
+                            $('#background-color-div').children('span').each(function() {
+                                $(this).removeClass('current-color-background');
+                            });
+                            $('#black-background-select').addClass('current-color-background');
+                            Util.StorageSetter('font_color', '#fff');
+                        }
                     })
                 }
 
