@@ -32,8 +32,6 @@
             #fiction_chapter_content p {
                 margin: 5px auto 5px;
                 text-indent: 2em;
-                font-size: 16px;
-                color: #555;
                 line-height: 30px;
                 padding: 5px 15px 0 15px;
             }
@@ -248,23 +246,8 @@
                 <div class="icon-back"></div>
                 <div class="nav-bar-top-title">返回书架</div>
             </div>
-            <div id="fiction_chapter_title">第2章 谁准你进来的</div>
+            <div id="fiction_chapter_title"></div>
             <div id="fiction_chapter_content">
-                <p>
-                    沈梦像个孩子一般用手面擦了一把嘴，将嘴角的红酒抹去，“谢谢，再见。”起身赤着脚走到地毯上捡起被她丢掉的两只鞋，依然是一手拿一只，一副不准备穿鞋子的架势。
-                    沈梦像个孩子一般用手面擦了一把嘴，将嘴角的红酒抹去，“谢谢，再见。”起身赤着脚走到地毯上捡起被她丢掉的两只鞋，依然是一手拿一只，一副不准备穿鞋子的架势。
-                </p>
-                <p>
-                    沈梦像个孩子一般用手面擦了一把嘴，将嘴角的红酒抹去，“谢谢，再见。”起身赤着脚走到地毯上捡起被她丢掉的两只鞋，依然是一手拿一只，一副不准备穿鞋子的架势。
-                    沈梦像个孩子一般用手面擦了一把嘴，将嘴角的红酒抹去，“谢谢，再见。”起身赤着脚走到地毯上捡起被她丢掉的两只鞋，依然是一手拿一只，一副不准备穿鞋子的架势。
-                    沈梦像个孩子一般用手面擦了一把嘴，将嘴角的红酒抹去，“谢谢，再见。”起身赤着脚走到地毯上捡起被她丢掉的两只鞋，依然是一手拿一只，一副不准备穿鞋子的架势。
-                    沈梦像个孩子一般用手面擦了一把嘴，将嘴角的红酒抹去，“谢谢，再见。”起身赤着脚走到地毯上捡起被她丢掉的两只鞋，依然是一手拿一只，一副不准备穿鞋子的架势。
-                </p>
-                <p>
-                    沈梦像个孩子一般用手面擦了一把嘴，将嘴角的红酒抹去，“谢谢，再见。”起身赤着脚走到地毯上捡起被她丢掉的两只鞋，依然是一手拿一只，一副不准备穿鞋子的架势。
-                    沈梦像个孩子一般用手面擦了一把嘴，将嘴角的红酒抹去，“谢谢，再见。”起身赤着脚走到地毯上捡起被她丢掉的两只鞋，依然是一手拿一只，一副不准备穿鞋子的架势。
-                    沈梦像个孩子一般用手面擦了一把嘴，将嘴角的红酒抹去，“谢谢，再见。”起身赤着脚走到地毯上捡起被她丢掉的两只鞋，依然是一手拿一只，一副不准备穿鞋子的架势。
-                </p>
             </div>
             <div class="m-menu-bar">
                 <ul>
@@ -299,10 +282,14 @@
                     <div class="nav-item-text">字体</div>
                 </div>
                 <div class="nav-light">
-                    <div class="nav-light-icon" style="display:none"></div>
-                    <div class="nav-light-title" style="display:none">夜间</div>
-                    <div class="nav-light-day-icon"></div>
-                    <div class="nav-item-text">白天</div>
+                    <div id="night-style" style="display:none">
+                        <div class="nav-light-icon" ></div>
+                        <div class="nav-item-text">夜间</div>
+                    </div>
+                    <div id="day-style" >
+                        <div class="nav-light-day-icon"></div>
+                        <div class="nav-item-text">白天</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -322,8 +309,20 @@
                     var StorageSetter = function(key, val) {
                         return localStorage.setItem(prefix + key, val);
                     }
-
+                    var getJSONP = function(url, callback) {
+                        return $.jsonp({
+                            url:url,
+                            cache:true,
+                            callback: 'duokan_fiction_chapter',
+                            success : function(result) {
+                                var data = $.base64.decode(result);
+                                var json = decodeURIComponent(escape(data));
+                                callback(json);
+                            }
+                        })
+                    }
                     return {
+                        getJSONP:getJSONP,
                         StorageGetter:StorageGetter,
                         StorageSetter:StorageSetter
                     }
@@ -338,38 +337,73 @@
                 var Win = $(window);
                 var Doc = $(document);
                 var Body = $('body');
-                var RootContainer = $('#fiction_chapter_content').children('p');
-                var initialFont = parseInt(Util.StorageGetter('font_size'));
-                if ( !initialFont) {
-                    initialFont = 17;
-                }
-                RootContainer.css('font-size', initialFont);
-
-                var initialFontColor = Util.StorageGetter('font_color');
-                if (!initialFontColor) {
-                    initialFontColor = '#555';
-                }
-                RootContainer.css('color', initialFontColor);
-
-                var initialBackgroundColor = Util.StorageGetter('background_color');
-                if (!initialBackgroundColor) {
-                    initialBackgroundColor = 'rice-background-select';
-                }
-                $('#' + initialBackgroundColor).addClass('current-color-background');
-                Body.css('background', $('#' + initialBackgroundColor).css('background'));
+                var RootTitleContainer = $('#fiction_chapter_title');
+                var RootContainer = $('#fiction_chapter_content');
 
                 function main() {
+                    var readerMode = ReaderModel();
+                    var readerBaseFrame = ReaderBaseFrame();
+
+                    readerMode.init(function(data) {
+                        readerBaseFrame(data);
+                    });
 
                     //Todo Main function
                     EventHandler();
                 }
 
-                function ReaderMode() {
+                function ReaderModel() {
                     //Todo 实现阅读器数据交互相关的方法
+                    var Chapter_id;
+                    var init = function(UICallback) {
+                        getFictionInfo(function() {
+                            getCurrentChapterContent(Chapter_id, function(data) {
+                                UICallback && UICallback(data);
+                            });
+                        })
+                    }
+                    var getFictionInfo = function(callback) {
+                        $.get('data/chapter.json', function(data) {
+                            Chapter_id = data.chapters[1].chapter_id;
+                            callback && callback();
+                        }, 'json')
+                    }
+
+                    var getCurrentChapterContent = function(chapter_id, callback) {
+                        $.get('data/data' + chapter_id + '.json', function(data) {
+                            if(data.result == 0) {
+                                var url = data.jsonp;
+                                Util.getJSONP(url, function(data) {
+                                    callback && callback(data);
+                                })
+                            }
+                        }, 'json')
+                    }
+
+                    return {
+                        init: init
+                    };
                 }
 
                 function ReaderBaseFrame() {
                     //Todo 渲染基本UI
+                    function parseChapterData(jsonData) {
+                        var jsonObj = JSON.parse(jsonData);
+                        var title = jsonObj.t;
+                        var content = '';
+                        for(var i =0; i<jsonObj.p.length; i++) {
+                            content += "<p>" + jsonObj.p[i] + "</p>";
+                        }
+                        return {
+                            title:title,
+                            content:content
+                        }
+                    }
+                    return function(data) {
+                        var contentObj = parseChapterData(data);
+                        RootTitleContainer.html(contentObj.title);
+                        RootContainer.html(contentObj.content);
+                    }
                 }
 
                 function EventHandler() {
@@ -408,6 +442,8 @@
                         Dom.js_nav_bottom.hide();
                         $('#nav-panel').hide();
                         $('#nav-panel-bk').hide();
+                        $('.nav-font-icon').show();
+                        $('.nav-font-icon-active').hide();
                     });
 
                     $('#font-large').click(function() {
@@ -427,6 +463,7 @@
                     $('#white-background-select').click(function() {
                         if (Body.css('background') != '#fff') {
                             Body.css('background', '#fff');
+                            RootTitleContainer.css('color', '#555');
                             RootContainer.css('color', '#555');
                             Util.StorageSetter('background_color', 'white-background-select');
                             $('#background-color-div').children('span').each(function() {
@@ -440,6 +477,7 @@
                     $('#rice-background-select').click(function() {
                         if (Body.css('background') != '#e9dfc7') {
                             Body.css('background', '#e9dfc7');
+                            RootTitleContainer.css('color', '#555');
                             RootContainer.css('color', '#555');
                             Util.StorageSetter('background_color', 'rice-background-select');
                             $('#background-color-div').children('span').each(function() {
@@ -453,6 +491,7 @@
                     $('#purple-background-select').click(function() {
                         if (Body.css('background') != '#663399') {
                             Body.css('background', '#663399');
+                            RootTitleContainer.css('color', '#fff');
                             RootContainer.css('color', '#fff');
                             Util.StorageSetter('background_color', 'purple-background-select');
                             $('#background-color-div').children('span').each(function() {
@@ -466,6 +505,7 @@
                     $('#navy-background-select').click(function() {
                         if (Body.css('background') != '#708090') {
                             Body.css('background', '#708090');
+                            RootTitleContainer.css('color', '#fff');
                             RootContainer.css('color', '#fff');
                             Util.StorageSetter('background_color', 'navy-background-select');
                             $('#background-color-div').children('span').each(function() {
@@ -479,6 +519,7 @@
                     $('#black-background-select').click(function() {
                         if (Body.css('background') != '#000000') {
                             Body.css('background', '#000000');
+                            RootTitleContainer.css('color', '#fff');
                             RootContainer.css('color', '#fff');
                             Util.StorageSetter('background_color', 'black-background-select');
                             $('#background-color-div').children('span').each(function() {
@@ -488,9 +529,78 @@
                             Util.StorageSetter('font_color', '#fff');
                         }
                     })
+
+                    $('#night-style').click(function() {
+                        if ($('#night-style').css('display') != 'none') {
+                            if (Body.css('background') != '#000000') {
+                                Body.css('background', '#000000');
+                                RootTitleContainer.css('color', '#fff');
+                                RootContainer.css('color', '#fff');
+                                Util.StorageSetter('background_color', 'black-background-select');
+                                $('#background-color-div').children('span').each(function() {
+                                    $(this).removeClass('current-color-background');
+                                });
+                                $('#black-background-select').addClass('current-color-background');
+                                Util.StorageSetter('font_color', '#fff');
+                            }
+                            $('#night-style').css('display', 'none');
+                            $('#day-style').css('display', 'block');
+                            Util.StorageSetter('display_style', 'night');
+                        }
+                    })
+
+                    $('#day-style').click(function() {
+                        if ($('#day-style').css('display') != 'none') {
+                            if (Body.css('background') != '#e9dfc7') {
+                                Body.css('background', '#e9dfc7');
+                                RootTitleContainer.css('color', '#555');
+                                RootContainer.css('color', '#555');
+                                Util.StorageSetter('background_color', 'rice-background-select');
+                                $('#background-color-div').children('span').each(function() {
+                                    $(this).removeClass('current-color-background');
+                                });
+                                $('#rice-background-select').addClass('current-color-background');
+                                Util.StorageSetter('font_color', '#555');
+                            }
+                            $('#day-style').css('display', 'none');
+                            $('#night-style').css('display', 'block');
+                            Util.StorageSetter('display_style', 'day');
+                        }
+                    })
                 }
 
                 main();
+
+                var initialDisplayStyle = Util.StorageGetter('display_style');
+                if(!initialDisplayStyle || initialDisplayStyle == 'day') {
+                    $('#day-style').css('display', 'none');
+                    $('#night-style').css('display', 'block');
+                    Util.StorageSetter('display_style', 'day');
+                } else {
+                    $('#night-style').css('display', 'none');
+                    $('#day-style').css('display', 'block');
+                    Util.StorageSetter('display_style', 'night');
+                }
+
+                var initialFont = parseInt(Util.StorageGetter('font_size'));
+                if ( !initialFont) {
+                    initialFont = 17;
+                }
+                RootContainer.css('font-size', initialFont);
+
+                var initialFontColor = Util.StorageGetter('font_color');
+                if (!initialFontColor) {
+                    initialFontColor = '#555';
+                }
+                RootTitleContainer.css('color', initialFontColor);
+                RootContainer.css('color', initialFontColor);
+
+                var initialBackgroundColor = Util.StorageGetter('background_color');
+                if (!initialBackgroundColor) {
+                    initialBackgroundColor = 'rice-background-select';
+                }
+                $('#' + initialBackgroundColor).addClass('current-color-background');
+                Body.css('background', $('#' + initialBackgroundColor).css('background'));
             })();
         </script>
     </body>
