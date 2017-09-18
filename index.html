@@ -251,8 +251,8 @@
             </div>
             <div class="m-menu-bar">
                 <ul>
-                    <li>上一章</li>
-                    <li>下一章</li>
+                    <li id="prev_chapter">上一章</li>
+                    <li id="next_chapter">下一章</li>
                 </ul>
             </div>
             <div id="nav-panel-bk" style="display:none"></div>
@@ -337,14 +337,47 @@
                 var Win = $(window);
                 var Doc = $(document);
                 var Body = $('body');
+                var readerModel;
+                var readerBaseFrame;
+                var currentChapter;
                 var RootTitleContainer = $('#fiction_chapter_title');
                 var RootContainer = $('#fiction_chapter_content');
+                var initialDisplayStyle = Util.StorageGetter('display_style');
+                if(!initialDisplayStyle || initialDisplayStyle == 'day') {
+                    $('#day-style').css('display', 'none');
+                    $('#night-style').css('display', 'block');
+                    Util.StorageSetter('display_style', 'day');
+                } else {
+                    $('#night-style').css('display', 'none');
+                    $('#day-style').css('display', 'block');
+                    Util.StorageSetter('display_style', 'night');
+                }
+
+                var initialFont = parseInt(Util.StorageGetter('font_size'));
+                if ( !initialFont) {
+                    initialFont = 17;
+                }
+                RootContainer.css('font-size', initialFont);
+
+                var initialFontColor = Util.StorageGetter('font_color');
+                if (!initialFontColor) {
+                    initialFontColor = '#555';
+                }
+                RootTitleContainer.css('color', initialFontColor);
+                RootContainer.css('color', initialFontColor);
+
+                var initialBackgroundColor = Util.StorageGetter('background_color');
+                if (!initialBackgroundColor) {
+                    initialBackgroundColor = 'rice-background-select';
+                }
+                $('#' + initialBackgroundColor).addClass('current-color-background');
+                Body.css('background', $('#' + initialBackgroundColor).css('background'));
 
                 function main() {
-                    var readerMode = ReaderModel();
-                    var readerBaseFrame = ReaderBaseFrame();
+                    readerModel = ReaderModel();
+                    readerBaseFrame = ReaderBaseFrame();
 
-                    readerMode.init(function(data) {
+                    readerModel.init(function(data) {
                         readerBaseFrame(data);
                     });
 
@@ -355,6 +388,7 @@
                 function ReaderModel() {
                     //Todo 实现阅读器数据交互相关的方法
                     var Chapter_id;
+                    var Chapter_size;
                     var init = function(UICallback) {
                         getFictionInfo(function() {
                             getCurrentChapterContent(Chapter_id, function(data) {
@@ -364,7 +398,9 @@
                     }
                     var getFictionInfo = function(callback) {
                         $.get('data/chapter.json', function(data) {
-                            Chapter_id = data.chapters[1].chapter_id;
+                            currentChapter = Util.StorageGetter("currentChapter");
+                            Chapter_id = currentChapter === null? data.chapters[1].chapter_id: parseInt(currentChapter);
+                            Chapter_size = data.chapters.length;
                             callback && callback();
                         }, 'json')
                     }
@@ -380,8 +416,29 @@
                         }, 'json')
                     }
 
+                    var getPrevChapter = function(UICallback) {
+                        if (Chapter_id == 0) {
+                            return;
+                        }
+                        Chapter_id -= 1;
+
+                        getCurrentChapterContent(Chapter_id, UICallback);
+                        Util.StorageSetter("currentChapter", Chapter_id);
+                    }
+
+                    var getNextChapter = function(UICallback) {
+                        if (Chapter_id == Chapter_size-1) {
+                            return;
+                        }
+                        Chapter_id += 1;
+                        getCurrentChapterContent(Chapter_id, UICallback);
+                        Util.StorageSetter("currentChapter", Chapter_id);
+                    }
+
                     return {
-                        init: init
+                        init: init,
+                        getPrevChapter: getPrevChapter,
+                        getNextChapter: getNextChapter
                     };
                 }
 
@@ -566,41 +623,24 @@
                             $('#night-style').css('display', 'block');
                             Util.StorageSetter('display_style', 'day');
                         }
-                    })
+                    });
+
+                    $('#prev_chapter').click(function() {
+                        readerModel.getPrevChapter(function(data) {
+                            readerBaseFrame(data);
+                        });
+                        Win.scrollTop(0);
+                    });
+
+                    $('#next_chapter').click(function() {
+                        readerModel.getNextChapter(function(data) {
+                            readerBaseFrame(data);
+                        });
+                        Win.scrollTop(0);
+                    });
                 }
 
                 main();
-
-                var initialDisplayStyle = Util.StorageGetter('display_style');
-                if(!initialDisplayStyle || initialDisplayStyle == 'day') {
-                    $('#day-style').css('display', 'none');
-                    $('#night-style').css('display', 'block');
-                    Util.StorageSetter('display_style', 'day');
-                } else {
-                    $('#night-style').css('display', 'none');
-                    $('#day-style').css('display', 'block');
-                    Util.StorageSetter('display_style', 'night');
-                }
-
-                var initialFont = parseInt(Util.StorageGetter('font_size'));
-                if ( !initialFont) {
-                    initialFont = 17;
-                }
-                RootContainer.css('font-size', initialFont);
-
-                var initialFontColor = Util.StorageGetter('font_color');
-                if (!initialFontColor) {
-                    initialFontColor = '#555';
-                }
-                RootTitleContainer.css('color', initialFontColor);
-                RootContainer.css('color', initialFontColor);
-
-                var initialBackgroundColor = Util.StorageGetter('background_color');
-                if (!initialBackgroundColor) {
-                    initialBackgroundColor = 'rice-background-select';
-                }
-                $('#' + initialBackgroundColor).addClass('current-color-background');
-                Body.css('background', $('#' + initialBackgroundColor).css('background'));
             })();
         </script>
     </body>
